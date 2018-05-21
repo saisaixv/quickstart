@@ -1,4 +1,4 @@
-package util
+package cache
 
 import(
 	
@@ -23,15 +23,23 @@ func newPool(url string,max_idle,idle_timeout int,db int) *redis.Pool{
 		Dial:func()(redis.Conn,error){
 			c,err:=redis.DialURL(url)
 			if err!=nil{
+				fmt.Println("DialURL error")
 				return nil,err
 			}
 
-			c.Do("SELECT",db)
+			//使用 几号 数据库
+			_,err=c.Do("SELECT",0)
+
+			if err!=nil{
+				fmt.Println("select db error")
+				fmt.Println(err)
+			}
 
 			return c,err
 		},
 		TestOnBorrow:func(c redis.Conn,t time.Time)error{
 			if time.Since(t)<time.Minute{
+				fmt.Println("select db error")
 				return nil
 			}
 
